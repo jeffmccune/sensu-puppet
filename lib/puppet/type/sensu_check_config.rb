@@ -1,3 +1,5 @@
+require File.expand_path(File.join(File.dirname(__FILE__), '..', '..',
+                                   'puppet_x', 'sensu', 'fspaths'))
 Puppet::Type.newtype(:sensu_check_config) do
   @doc = ""
 
@@ -37,15 +39,17 @@ Puppet::Type.newtype(:sensu_check_config) do
 
   newparam(:base_path) do
     desc "The base path to the client config file"
-    defaultto '/etc/sensu/conf.d/checks'
+    defaultto File.join(PuppetX::Sensu::Fspaths.conf_d, 'checks')
   end
 
-  newparam(:config) do
+  newproperty(:config) do
     desc "Check configuration for the client to use"
+    defaultto {}
   end
 
-  newparam(:event) do
+  newproperty(:event) do
     desc "Configuration to send with the event to handlers"
+    defaultto {}
   end
 
   autorequire(:package) do
