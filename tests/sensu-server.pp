@@ -62,7 +62,8 @@ node 'sensu-server' {
       'subscriptions' => 'eval: value.include?("http")',
     },
   }
-  sensu::check { 'remote_http':
+
+  $check_event_data = {
     command             => '/opt/sensu/embedded/bin/check-http.rb -u http://:::address:::',
     occurrences         => 2,
     interval            => 300,
@@ -72,5 +73,13 @@ node 'sensu-server' {
     standalone          => false,
     subscribers         => 'roundrobin:poller',
     proxy_requests      => $proxy_requests_http,
+  }
+
+  # These two resources are equivalent.
+  create_resources('sensu::check', { 'remote_http' => $check_event_data })
+  # This form is generic, any data passed to event will be written to the config
+  # file.
+  sensu::config { 'remote_http':
+    event => $check_event_data,
   }
 }

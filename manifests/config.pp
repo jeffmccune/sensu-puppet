@@ -28,7 +28,7 @@ define sensu::config (
     owner  => 'sensu',
     group  => 'sensu',
     mode   => '0444',
-    before => Sensu_check[$name],
+    before => Sensu_check_config[$name],
   }
 
   sensu_check_config { $name:
