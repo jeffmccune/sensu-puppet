@@ -88,6 +88,16 @@ Puppet::Type.type(:sensu_check).provide(:json) do
     SENSU_CHECK_PROPERTIES.map(&:to_s).include? prop
   end
 
+  ##
+  # config is arbitrary configuration scope.  For a sensu check, this is defined
+  # as all configuration data in the top-level JSON object which is outside of
+  # the scope `checks.mycheck`, where `mycheck` is the name of the check.  For
+  # example, `{'mailer': {}} and {'checks': {'foobar': {}}}` is part of the
+  # config map for a check named `mycheck`.  `{'checks': {'mycheck': {'command':
+  # 'true'}}}`, however, is not part of the config map for a check named
+  # `mycheck`.
+  #
+  # @return [Hash] the config map value
   def config
     # return everything except the value at the level of checks.name
     ary = conf.map do |k,v|
@@ -103,8 +113,18 @@ Puppet::Type.type(:sensu_check).provide(:json) do
     Hash[ary.delete_if(&:nil?)]
   end
 
+  ##
+  # See #config for the specification of the scope of a config map.
   def config=(value)
-    conf.merge!(value)
+    # delete everything except the value at the level of checks.name
+    # Then, merge results on top of the provided arbitrary config.
+    if conf['checks'] and conf['checks'][resource[:name]]
+      check_config = conf['checks'][resource[:name]].dup
+    else
+      check_config = {}
+    end
+
+    @conf = value.merge({'checks' => {resource[:name] => check_config}})
   end
 
   def custom
